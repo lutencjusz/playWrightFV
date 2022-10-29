@@ -154,21 +154,25 @@ class FV extends TestFixtures {
         Scanner scanner = new Scanner(System.in);
 
         page.navigate("https://nowymoj.t-mobile.pl/");
+        if (page.locator("//button/span[text()='Accept all']").isVisible()) {
+            page.locator("//button/span[text()='Accept all']").click();
+        }
         if (page.locator("//button[contains(text(),'Ok')]").isVisible()) {
             page.locator("//button[contains(text(),'Ok')]").click();
         }
         assert tMobileUserName != null;
-        page.locator("id=login_layout_txtUName").fill(CryptoText.decodeDES(tMobileUserName));
+        page.locator("id=email").fill(CryptoText.decodeDES(tMobileUserName));
         page.locator("//button[text()='Dalej']").click();
         assert tMobilePassword != null;
         page.locator("id=password").fill(CryptoText.decodeDES(tMobilePassword));
         page.locator("//input[@value='Zaloguj się']").click();
 
         System.out.println("Podaj kod otrzymany SMS'em od T-mobile: ");
-        int SmsCode = scanner.nextInt();
+        String SmsCode = scanner.nextLine();
 
-        page.locator("//input[@id='otpInput']").type(String.valueOf(SmsCode));
+        page.locator("//input[@id='otpInput']").type(SmsCode);
         page.locator("//input[@id='submit1']").click();
+        page.locator("//button[contains(text(),'Ok')]").click();
         Locator menuItem = page.locator("//li//span[contains(text(),'Płatności i faktury')]");
         menuItem.waitFor();
         menuItem.click();
@@ -183,7 +187,6 @@ class FV extends TestFixtures {
         download.saveAs(Paths.get(PATH_TO_DROPBOX + fileName));
         System.out.println("Pobrano plik: " + fileName);
     }
-
 
 }
 
