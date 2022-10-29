@@ -48,7 +48,7 @@ class TestFixtures {
     }
 }
 
-class FV extends TestFixtures {
+class Invoices extends TestFixtures {
 
     LocalDate today = LocalDate.now();
     private static final Dotenv dotenv = Dotenv.configure()
@@ -64,12 +64,8 @@ class FV extends TestFixtures {
     private final String toyotaPassword = dotenv.get("TOYOTA_PASSWORD");
     private final String tMobileUserName = dotenv.get("T_MOBILE_USER_NAME");
     private final String tMobilePassword = dotenv.get("T_MOBILE_PASSWORD");
-
+    private final String laseLinkPhone = dotenv.get("LEASELINK_USER_NAME");
     private final String PATH_TO_DROPBOX = dotenv.get("PATH_TO_DROPBOX") + today.toString().substring(0, 7) + "\\";
-
-    private Locator menuTabBar(String tagName) {
-        return page.getByText(tagName);
-    }
 
     @Test
     void fakturownia() {
@@ -94,9 +90,7 @@ class FV extends TestFixtures {
             if (monthSubStr == month && yearSubStr == year) {
                 System.out.println("Pobieram FV nr: " + nr);
                 page.locator(String.format(locators.getCogIconLocator(), nr)).last().click();
-                Download download = page.waitForDownload(() -> {
-                    page.locator(String.format(locators.getDownloadLocator(), nr)).click();
-                });
+                Download download = page.waitForDownload(() -> page.locator(String.format(locators.getDownloadLocator(), nr)).click());
                 String fileName = "FV" + year + "-" + month + "-" + nr.substring(10) + ".pdf";
                 download.saveAs(Paths.get(PATH_TO_DROPBOX + fileName));
                 System.out.println("Pobieram pliki do scieżki: " + fileName);
@@ -114,9 +108,7 @@ class FV extends TestFixtures {
         page.locator("id=Password").press("Enter");
         Locator invoices = page.getByText("Faktury").first();
         invoices.waitFor();
-        Download download = page.waitForDownload(() -> {
-            page.locator("//tr[1]//td[3]//span[contains(@class,'pko-icon-pobierz_PDF')]").click();
-        });
+        Download download = page.waitForDownload(() -> page.locator("//tr[1]//td[3]//span[contains(@class,'pko-icon-pobierz_PDF')]").click());
         String invoiceName = page.locator("//tr[1]//td[1]//a").innerText();
         String fileName = "PKO_LM-" + invoiceName.substring(3, 5) + "-" + invoiceName.substring(6, 8) + "-" + invoiceName.substring(9) + ".pdf";
         download.saveAs(Paths.get(PATH_TO_DROPBOX + fileName));
@@ -140,16 +132,14 @@ class FV extends TestFixtures {
         Locator InvoiceNumber = page.locator("//tr[contains(@id,'DXDataRow0')]//td[2]");
         InvoiceNumber.waitFor();
         String invoiceName = InvoiceNumber.innerText();
-        Download download = page.waitForDownload(() -> {
-            page.locator("//tr[contains(@id,'DXDataRow0')]//td/a[contains(@class,'fa-file-pdf')]").click();
-        });
+        Download download = page.waitForDownload(() -> page.locator("//tr[contains(@id,'DXDataRow0')]//td/a[contains(@class,'fa-file-pdf')]").click());
         String fileName = "Toyota_" + invoiceName.substring(0, 5) + "-" + invoiceName.substring(6, 8) + "-" + invoiceName.substring(6, 8) + invoiceName.substring(9, 13) + ".pdf";
         download.saveAs(Paths.get(PATH_TO_DROPBOX + fileName));
         System.out.println("Pobrano plik: " + fileName);
     }
 
     @Test
-    void tmobile() {
+    void tMobile() {
 
         Scanner scanner = new Scanner(System.in);
 
@@ -180,13 +170,35 @@ class FV extends TestFixtures {
         Locator InvoiceNumber = page.locator("//li[1]//li[1]//div[@class='label']/span[2]");
         InvoiceNumber.waitFor();
         String invoiceName = InvoiceNumber.innerText();
-        String fileName = "t-mobile_" + invoiceName + ".pdf";
-        Download download = page.waitForDownload(() -> {
-            page.locator("//ul/li[1]//li[1]//a[contains(text(),'pobierz')]").click();
-        });
+        String fileName = "T-Mobile_" + invoiceName + ".pdf";
+        Download download = page.waitForDownload(() -> page.locator("//ul/li[1]//li[1]//a[contains(text(),'pobierz')]").click());
         download.saveAs(Paths.get(PATH_TO_DROPBOX + fileName));
         System.out.println("Pobrano plik: " + fileName);
     }
 
+    @Test
+    void leaseLink() {
+        Scanner scanner = new Scanner(System.in);
+        page.navigate("https://portal.leaselink.pl/");
+        assert laseLinkPhone != null;
+        page.locator("id=CallbackPanel_txtPhoneNumber").fill(CryptoText.decodeDES(laseLinkPhone));
+        if (page.locator("id=cookiescript_accept").isVisible()) {
+            page.locator("id=cookiescript_accept").click();
+        }
+        page.locator("id=CallbackPanel_btnPin").click();
+        System.out.println("Podaj kod otrzymany SMS'em od LeaseLink: ");
+        String SmsCode = scanner.nextLine();
+        page.locator("id=CallbackPanel_txtPinNumber").fill(SmsCode);
+        page.locator("id=CallbackPanel_btnLogin").click();
+        Locator logoPortal = page.locator("id=divLogoPortal");
+        logoPortal.waitFor();
+        Locator InvoiceNumber = page.locator("//tr[contains(@id,'grdFaktury_DXDataRow0')]/td[2]");
+        InvoiceNumber.waitFor();
+        String invoiceName = InvoiceNumber.innerText();
+        String fileName = "Leaselink_" + invoiceName.replace("/", "-") + ".pdf";
+        Download download = page.waitForDownload(() -> page.locator("//tr[contains(@id,'grdFaktury_DXDataRow0')]//a[contains(@class,'fa-file-pdf')]").click());
+        download.saveAs(Paths.get(PATH_TO_DROPBOX + fileName));
+        System.out.println("Pobrano plik: " + fileName);
+    }
 }
 
