@@ -61,12 +61,17 @@ class Test1 extends TestFixtures {
 
     @Test
     void fakturownia() {
+
+        final String loginButtonLocator = "//a[@class='button-outline']/span[text()='Zaloguj się']";
+        final String userNameLocator = "//*[@id='user_session_login']";
+        final String passwordLocator = "//*[@id='user_session_password']";
+
         page.navigate("https://fakturownia.pl/");
-        page.locator("//a[@class='button-outline']/span[text()='Zaloguj się']").click();
+        page.locator(loginButtonLocator).click();
         assert userName != null;
-        page.locator("//*[@id='user_session_login']").fill(CryptoText.decodeDES(userName));
+        page.locator(userNameLocator).fill(CryptoText.decodeDES(userName));
         assert password != null;
-        page.locator("//*[@id='user_session_password']").fill(CryptoText.decodeDES(password));
+        page.locator(passwordLocator).fill(CryptoText.decodeDES(password));
         page.locator("//input[@type='submit']").click();
         assertEquals("https://sopim.fakturownia.pl/", page.url());
         menuTabBar("Przychody ").click();
