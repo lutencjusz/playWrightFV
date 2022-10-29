@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TestFixtures {
 
+    String fileName;
     Playwright playwright;
     Browser browser;
 
@@ -43,7 +44,7 @@ class TestFixtures {
 
     @AfterEach
     void closeContext() {
-        page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("example.png")));
+        page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get(fileName)));
         context.close();
     }
 }
@@ -91,7 +92,7 @@ class Invoices extends TestFixtures {
                 System.out.println("Pobieram FV nr: " + nr);
                 page.locator(String.format(locators.getCogIconLocator(), nr)).last().click();
                 Download download = page.waitForDownload(() -> page.locator(String.format(locators.getDownloadLocator(), nr)).click());
-                String fileName = "FV" + year + "-" + month + "-" + nr.substring(10) + ".pdf";
+                fileName = "FV" + year + "-" + month + "-" + nr.substring(10) + ".pdf";
                 download.saveAs(Paths.get(PATH_TO_DROPBOX + fileName));
                 System.out.println("Pobieram pliki do scieżki: " + fileName);
             }
@@ -110,7 +111,7 @@ class Invoices extends TestFixtures {
         invoices.waitFor();
         Download download = page.waitForDownload(() -> page.locator("//tr[1]//td[3]//span[contains(@class,'pko-icon-pobierz_PDF')]").click());
         String invoiceName = page.locator("//tr[1]//td[1]//a").innerText();
-        String fileName = "PKO_LM-" + invoiceName.substring(3, 5) + "-" + invoiceName.substring(6, 8) + "-" + invoiceName.substring(9) + ".pdf";
+        fileName = "PKO_LM-" + invoiceName.substring(3, 5) + "-" + invoiceName.substring(6, 8) + "-" + invoiceName.substring(9) + ".pdf";
         download.saveAs(Paths.get(PATH_TO_DROPBOX + fileName));
         System.out.println("Pobrano plik: " + fileName);
     }
@@ -133,7 +134,7 @@ class Invoices extends TestFixtures {
         InvoiceNumber.waitFor();
         String invoiceName = InvoiceNumber.innerText();
         Download download = page.waitForDownload(() -> page.locator("//tr[contains(@id,'DXDataRow0')]//td/a[contains(@class,'fa-file-pdf')]").click());
-        String fileName = "Toyota_" + invoiceName.substring(0, 5) + "-" + invoiceName.substring(6, 8) + "-" + invoiceName.substring(6, 8) + invoiceName.substring(9, 13) + ".pdf";
+        fileName = "Toyota_" + invoiceName.substring(0, 5) + "-" + invoiceName.substring(6, 8) + "-" + invoiceName.substring(6, 8) + invoiceName.substring(9, 13) + ".pdf";
         download.saveAs(Paths.get(PATH_TO_DROPBOX + fileName));
         System.out.println("Pobrano plik: " + fileName);
     }
@@ -170,7 +171,7 @@ class Invoices extends TestFixtures {
         Locator InvoiceNumber = page.locator("//li[1]//li[1]//div[@class='label']/span[2]");
         InvoiceNumber.waitFor();
         String invoiceName = InvoiceNumber.innerText();
-        String fileName = "T-Mobile_" + invoiceName + ".pdf";
+        fileName = "T-Mobile_" + invoiceName + ".pdf";
         Download download = page.waitForDownload(() -> page.locator("//ul/li[1]//li[1]//a[contains(text(),'pobierz')]").click());
         download.saveAs(Paths.get(PATH_TO_DROPBOX + fileName));
         System.out.println("Pobrano plik: " + fileName);
@@ -195,7 +196,7 @@ class Invoices extends TestFixtures {
         Locator InvoiceNumber = page.locator("//tr[contains(@id,'grdFaktury_DXDataRow0')]/td[2]");
         InvoiceNumber.waitFor();
         String invoiceName = InvoiceNumber.innerText();
-        String fileName = "Leaselink_" + invoiceName.replace("/", "-") + ".pdf";
+        fileName = "Leaselink_" + invoiceName.replace("/", "-") + ".pdf";
         Download download = page.waitForDownload(() -> page.locator("//tr[contains(@id,'grdFaktury_DXDataRow0')]//a[contains(@class,'fa-file-pdf')]").click());
         download.saveAs(Paths.get(PATH_TO_DROPBOX + fileName));
         System.out.println("Pobrano plik: " + fileName);
