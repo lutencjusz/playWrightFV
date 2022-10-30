@@ -1,7 +1,8 @@
-package org.example;
+package org.example.tests;
 
 import com.microsoft.playwright.*;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.example.Locators;
 import org.example.utils.CryptoText;
 import org.junit.jupiter.api.*;
 
@@ -51,7 +52,7 @@ class TestFixtures {
     }
 }
 
-class InvoicesDownload extends TestFixtures {
+class InvoicesDownloadTest extends TestFixtures {
 
     LocalDate today = LocalDate.now();
     private static final Dotenv dotenv = Dotenv.configure()
@@ -73,7 +74,7 @@ class InvoicesDownload extends TestFixtures {
     private final String PATH_TO_DROPBOX = dotenv.get("PATH_TO_DROPBOX") + today.toString().substring(0, 7) + "\\";
 
     @Test
-    void fakturownia() {
+    public void fakturownia() {
         screenshotName = "fakturownia.png";
         page.navigate("https://fakturownia.pl/");
         page.locator(locators.getLoginButtonLocator()).click();
@@ -105,7 +106,7 @@ class InvoicesDownload extends TestFixtures {
     }
 
     @Test
-    void pko() {
+    public void pko() {
         screenshotName = "pko.png";
         page.navigate("https://portal.pkoleasing.pl/Common/Authentication/Login");
         assert pkoUserName != null;
@@ -123,7 +124,7 @@ class InvoicesDownload extends TestFixtures {
     }
 
     @Test
-    void toyota() {
+    public void toyota() {
         screenshotName = "toyota.png";
         page.navigate("https://portal.toyotaleasing.pl/Login");
         if (page.locator("//span[text()='Akceptuję wszystkie']").isVisible()) {
@@ -147,7 +148,7 @@ class InvoicesDownload extends TestFixtures {
     }
 
     @Test
-    void tMobile() {
+    public void tMobile() {
         screenshotName = "tMobile.png";
         Scanner scanner = new Scanner(System.in);
         page.navigate("https://nowymoj.t-mobile.pl/");
@@ -184,7 +185,7 @@ class InvoicesDownload extends TestFixtures {
     }
 
     @Test
-    void leaseLink() {
+    public void leaseLink() {
         screenshotName = "leaseLink.png";
         Scanner scanner = new Scanner(System.in);
         page.navigate("https://portal.leaselink.pl/");
@@ -210,7 +211,7 @@ class InvoicesDownload extends TestFixtures {
     }
 
     @Test
-    void microsoft() {
+    public void microsoft() {
         screenshotName = "microsoft.png";
         page.navigate("https://admin.microsoft.com/Adminportal/Home?ref=billoverview/invoice-list#/billoverview/invoice-list");
         assert microsoftUserName != null;
