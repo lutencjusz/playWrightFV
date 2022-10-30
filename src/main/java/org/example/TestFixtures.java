@@ -15,7 +15,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TestFixtures {
 
+    final int STANDARD_DELAY_IN_MIN_SEC = 1500;
     String fileName;
+    String screenshotName;
     Playwright playwright;
     Browser browser;
 
@@ -44,12 +46,12 @@ class TestFixtures {
 
     @AfterEach
     void closeContext() {
-        page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get(fileName)));
+        page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get(screenshotName)));
         context.close();
     }
 }
 
-class Invoices extends TestFixtures {
+class InvoicesDownload extends TestFixtures {
 
     LocalDate today = LocalDate.now();
     private static final Dotenv dotenv = Dotenv.configure()
@@ -66,10 +68,13 @@ class Invoices extends TestFixtures {
     private final String tMobileUserName = dotenv.get("T_MOBILE_USER_NAME");
     private final String tMobilePassword = dotenv.get("T_MOBILE_PASSWORD");
     private final String laseLinkPhone = dotenv.get("LEASELINK_USER_NAME");
+    private final String microsoftUserName = dotenv.get("MICROSOFT_USER_NAME");
+    private final String microsoftPassword = dotenv.get("MICROSOFT_PASSWORD");
     private final String PATH_TO_DROPBOX = dotenv.get("PATH_TO_DROPBOX") + today.toString().substring(0, 7) + "\\";
 
     @Test
     void fakturownia() {
+        screenshotName = "fakturownia.png";
         page.navigate("https://fakturownia.pl/");
         page.locator(locators.getLoginButtonLocator()).click();
         assert fakturowaniaUserName != null;
@@ -101,6 +106,7 @@ class Invoices extends TestFixtures {
 
     @Test
     void pko() {
+        screenshotName = "pko.png";
         page.navigate("https://portal.pkoleasing.pl/Common/Authentication/Login");
         assert pkoUserName != null;
         page.locator("id=Login").fill(CryptoText.decodeDES(pkoUserName));
@@ -118,6 +124,7 @@ class Invoices extends TestFixtures {
 
     @Test
     void toyota() {
+        screenshotName = "toyota.png";
         page.navigate("https://portal.toyotaleasing.pl/Login");
         if (page.locator("//span[text()='Akceptuję wszystkie']").isVisible()) {
             page.locator("//span[text()='Akceptuję wszystkie']").click();
@@ -141,9 +148,8 @@ class Invoices extends TestFixtures {
 
     @Test
     void tMobile() {
-
+        screenshotName = "tMobile.png";
         Scanner scanner = new Scanner(System.in);
-
         page.navigate("https://nowymoj.t-mobile.pl/");
         if (page.locator("//button/span[text()='Accept all']").isVisible()) {
             page.locator("//button/span[text()='Accept all']").click();
@@ -179,6 +185,7 @@ class Invoices extends TestFixtures {
 
     @Test
     void leaseLink() {
+        screenshotName = "leaseLink.png";
         Scanner scanner = new Scanner(System.in);
         page.navigate("https://portal.leaselink.pl/");
         assert laseLinkPhone != null;
@@ -196,8 +203,34 @@ class Invoices extends TestFixtures {
         Locator InvoiceNumber = page.locator("//tr[contains(@id,'grdFaktury_DXDataRow0')]/td[2]");
         InvoiceNumber.waitFor();
         String invoiceName = InvoiceNumber.innerText();
-        fileName = "Leaselink_" + invoiceName.replace("/", "-") + ".pdf";
+        fileName = "LeaseLink_" + invoiceName.replace("/", "-") + ".pdf";
         Download download = page.waitForDownload(() -> page.locator("//tr[contains(@id,'grdFaktury_DXDataRow0')]//a[contains(@class,'fa-file-pdf')]").click());
+        download.saveAs(Paths.get(PATH_TO_DROPBOX + fileName));
+        System.out.println("Pobrano plik: " + fileName);
+    }
+
+    @Test
+    void microsoft() {
+        screenshotName = "microsoft.png";
+        page.navigate("https://admin.microsoft.com/Adminportal/Home?ref=billoverview/invoice-list#/billoverview/invoice-list");
+        assert microsoftUserName != null;
+        page.locator("id=i0116").fill(CryptoText.decodeDES(microsoftUserName));
+        page.locator("id=i0116").press("Enter");
+        assert microsoftPassword != null;
+        page.locator("id=i0118").fill(CryptoText.decodeDES(microsoftPassword));
+        Locator staySignedIn = page.locator("id=idSIButton9");
+        staySignedIn.waitFor();
+        staySignedIn.click(new Locator.ClickOptions().setDelay(STANDARD_DELAY_IN_MIN_SEC));
+        staySignedIn.waitFor();
+        staySignedIn.click(new Locator.ClickOptions().setDelay(STANDARD_DELAY_IN_MIN_SEC));
+        Locator viewport = page.locator("//div[@data-automation-id='ListInvoiceList']");
+        viewport.waitFor();
+        Locator InvoiceNumber = page.locator("//div[@data-list-index='0']//div[@aria-colindex='2']/span");
+        InvoiceNumber.waitFor();
+        String invoiceName = InvoiceNumber.innerText();
+        InvoiceNumber.click();
+        Download download = page.waitForDownload(() -> page.locator("//button[text()='Pobierz plik PDF']").click());
+        fileName = "Microsoft_" + invoiceName+ ".pdf";
         download.saveAs(Paths.get(PATH_TO_DROPBOX + fileName));
         System.out.println("Pobrano plik: " + fileName);
     }
