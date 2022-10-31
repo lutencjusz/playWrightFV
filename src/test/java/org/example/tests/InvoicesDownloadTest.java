@@ -75,6 +75,7 @@ class InvoicesDownloadTest extends TestFixtures {
 
     @Test
     public void fakturownia() {
+        Scanner scanner = new Scanner(System.in);
         screenshotName = "fakturownia.png";
         page.navigate("https://fakturownia.pl/");
         page.locator(locators.getLoginButtonLocator()).click();
@@ -89,8 +90,20 @@ class InvoicesDownloadTest extends TestFixtures {
         page.locator(locators.getTotalSumLocator()).waitFor();
         Locator rowLocator = page.locator(locators.getInvoicesColumnTableLocators());
         List<String> invoicesNumbers = rowLocator.allTextContents();
-        int month = 9;
-        int year = 2022;
+        int month = today.getMonth().getValue();
+        int year = today.getYear();
+        System.out.println("Podaj miesiąc wystawienia FV (" + month + "):");
+        String monthString = scanner.nextLine();
+        if (!monthString.isEmpty()) {
+            month = Integer.parseInt(monthString);
+        }
+        System.out.println("Wybrałeś miesiąc: " + month);
+        System.out.println("Podaj rok wystawienia FV (" + year + "):");
+        String yearString = scanner.nextLine();
+        if (!yearString.isEmpty()) {
+            year = Integer.parseInt(yearString);
+        }
+        System.out.println("Wybrałeś rok: " + year);
         for (String nr : invoicesNumbers) {
             int monthSubStr = Integer.parseInt(nr.substring(7, 9));
             int yearSubStr = Integer.parseInt(nr.substring(2, 6));
@@ -231,7 +244,7 @@ class InvoicesDownloadTest extends TestFixtures {
         String invoiceName = InvoiceNumber.innerText();
         InvoiceNumber.click();
         Download download = page.waitForDownload(() -> page.locator("//button[text()='Pobierz plik PDF']").click());
-        fileName = "Microsoft_" + invoiceName+ ".pdf";
+        fileName = "Microsoft_" + invoiceName + ".pdf";
         download.saveAs(Paths.get(PATH_TO_DROPBOX + fileName));
         System.out.println("Pobrano plik: " + fileName);
     }
